@@ -34,7 +34,7 @@ public class FilmController {
     }
 
     //обновляет фильм
-    @PutMapping()
+    @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) throws ValidationException {
         if (films.containsKey(film.getId())) {
             films.put(film.getId(), film);
