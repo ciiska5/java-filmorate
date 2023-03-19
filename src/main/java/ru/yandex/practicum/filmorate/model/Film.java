@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -23,4 +25,5 @@ public class Film {
     @NotNull
     @Positive(message = "duration не может быть отрицательным или равным нулю")
     private Long duration;
+    private Set<Integer> likes = new HashSet<>();
 }
