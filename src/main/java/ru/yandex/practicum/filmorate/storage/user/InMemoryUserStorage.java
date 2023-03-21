@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.UpdateException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -14,7 +15,7 @@ import java.util.*;
 public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Integer, User> users = new HashMap<>();
-    public Integer userId = 1;
+    private Integer userId = 1;
 
     //инкрементирует userId
     private Integer incrementUserId() {
@@ -29,6 +30,7 @@ public class InMemoryUserStorage implements UserStorage {
             user.setName(user.getLogin());
         }
         user.setId(incrementUserId());
+        log.info("Добавлен пользователь с id = {}", user.getId());
         users.put(user.getId(), user);
         log.trace(String.valueOf(user));
         return user;
@@ -39,6 +41,7 @@ public class InMemoryUserStorage implements UserStorage {
     public User updateUser(User user) {
         if (users.containsKey(user.getId())) {
             users.put(user.getId(), user);
+            log.info("Обновлен пользователь с id = {}", user.getId());
             log.trace(String.valueOf(user));
             return user;
         } else {
@@ -50,7 +53,7 @@ public class InMemoryUserStorage implements UserStorage {
     //получает список всех пользователей
     @Override
     public Collection<User> getAllUsers() {
-        log.trace("Общее количество пользователей: {}", users.size());
+        log.info("Общее количество пользователей: {}", users.size());
         return users.values();
     }
 
@@ -58,8 +61,11 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User getUserById(int userId) {
         if (users.containsKey(userId)) {
+            User user = users.get(userId);
+            log.trace(String.valueOf(user));
             return users.get(userId);
         } else {
+            log.error("Не найден пользователь с id = {}", userId);
             throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", userId));
         }
     }
@@ -67,32 +73,58 @@ public class InMemoryUserStorage implements UserStorage {
     //добавляет друга
     @Override
     public void addFriend(int userId, int friendId) {
-        if (users.containsKey(userId) && users.containsKey(friendId)) {
-            if (users.get(userId).getFriends().contains(friendId)) {
+        boolean ifUser = users.containsKey(userId);
+        boolean ifFriend = users.containsKey(friendId);
+        if (ifUser && ifFriend) {
+            User user = users.get(userId);
+            if (user.getFriends().contains(friendId)) {
+                log.error("Пользователь с id = {} уже в друзьях у пользователя с id = {}", friendId, userId);
                 throw new ValidationException(
                         String.format("Пользователь с id = %d уже в друзьях у пользователя с id = %d", friendId, userId)
                 );
             }
-            users.get(userId).getFriends().add(friendId);
+            log.info("Пользователь с id = {} добавил в друзья пользователя с id = {}", userId, friendId);
+            user.getFriends().add(friendId);
             users.get(friendId).getFriends().add(userId);
         } else {
-            throw new UserNotFoundException("Пользовател(и) не найдены");
+            if (!ifUser && !ifFriend) {
+                log.error("Пользователи не найдены");
+                throw new UserNotFoundException("Пользователи не найдены");
+            } else if (!ifUser) {
+                log.error("Пользователь с id = {} не найден", userId);
+                throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", userId));
+            }
+            log.error("Пользователь с id = {} не найден", friendId);
+            throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", friendId));
         }
     }
 
     //удаляет из друзей
     @Override
     public void removeFriend(int userId, int friendId) {
-        if (users.containsKey(userId) && users.containsKey(friendId)) {
-            if (!users.get(userId).getFriends().contains(friendId)) {
+        boolean ifUser = users.containsKey(userId);
+        boolean ifFriend = users.containsKey(friendId);
+        if (ifUser && ifFriend) {
+            User user = users.get(userId);
+            if (!user.getFriends().contains(friendId)) {
+                log.error("Пользователь с id = {} не найден в друзьях у пользователя с id = {}", friendId, userId);
                 throw new UserNotFoundException(
                         String.format("Пользователь с id = %d не найден в друзьях у пользователя с id = %d", friendId, userId)
                 );
             }
-            users.get(userId).getFriends().remove(friendId);
+            log.info("Пользователь с id = {} удалил из друзей пользователя с id = {}", userId, friendId);
+            user.getFriends().remove(friendId);
             users.get(friendId).getFriends().remove(userId);
         } else {
-            throw new UserNotFoundException("Пользовател(и) не найдены");
+            if (!ifUser && !ifFriend) {
+                log.error("Пользователи не найдены");
+                throw new UserNotFoundException("Пользователи не найдены");
+            } else if (!ifUser) {
+                log.error("Пользователь с id = {} не найден", userId);
+                throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", userId));
+            }
+            log.error("Пользователь с id = {} не найден", friendId);
+            throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", friendId));
         }
     }
 
@@ -100,16 +132,27 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public List<User> getMutualFriends(int userId, int otherId) {
         List<User> mutualFriends = new ArrayList<>();
-        if (users.containsKey(userId) && users.containsKey(otherId)) {
+        boolean ifUser = users.containsKey(userId);
+        boolean ifOther = users.containsKey(otherId);
+        if (ifUser && ifOther) {
             Set<Integer> usersFriends = new HashSet<>(users.get(userId).getFriends());
             Set<Integer> otherUsersFriends = new HashSet<>(users.get(otherId).getFriends());
             usersFriends.retainAll(otherUsersFriends);
             for (Integer id : usersFriends) {
                 mutualFriends.add(users.get(id));
             }
+            log.info("Получен список общих друзей");
             return mutualFriends;
         } else {
-            throw new UserNotFoundException("Пользователи не найдены");
+            if (!ifUser && !ifOther) {
+                log.error("Пользователи не найдены");
+                throw new UserNotFoundException("Пользователи не найдены");
+            } else if (!ifUser) {
+                log.error("Пользователь с id = {} не найден", userId);
+                throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", userId));
+            }
+            log.error("Пользователь с id = {} не найден", otherId);
+            throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", otherId));
         }
     }
 
@@ -120,13 +163,16 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.containsKey(userId)) {
             Set<Integer> friendsId = users.get(userId).getFriends();
             if (friendsId.isEmpty()) {
+                log.error("Список друзей пуст");
                 throw new UserNotFoundException("Список друзей пуст");
             }
             for (Integer id : friendsId) {
                 usersFriends.add(users.get(id));
             }
+            log.info("Получен список друзей пользователя с id = {}", userId);
             return usersFriends;
         } else {
+            log.error("Пользователь с id = {} не найден", userId);
             throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", userId));
         }
     }

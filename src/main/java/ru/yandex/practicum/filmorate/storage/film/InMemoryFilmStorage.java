@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Integer, Film> films = new HashMap<>();
     private Integer filmId = 1;
-    private final static LocalDate MIN_FILM_RELEASE_DATE = LocalDate.parse("1895-12-28");
+    private static final LocalDate MIN_FILM_RELEASE_DATE = LocalDate.parse("1895-12-28");
 
     //инкрементирует filmId
     private Integer incrementFilmId() {
@@ -33,6 +33,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         film.setId(incrementFilmId());
         films.put(film.getId(), film);
+        log.info("Добавлен фильм с id = {}", film.getId());
         log.trace(String.valueOf(film));
         return film;
     }
@@ -42,6 +43,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film updateFilm(Film film) {
         if (films.containsKey(film.getId())) {
             films.put(film.getId(), film);
+            log.info("Обновлен фильм с id = {}", film.getId());
             log.trace(String.valueOf(film));
             return film;
         } else {
@@ -53,7 +55,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     //получает все фильмы
     @Override
     public Collection<Film> getFilms() {
-        log.trace("Общее количество фильмов {}: ", films.size());
+        log.info("Общее количество фильмов {}: ", films.size());
         return films.values();
     }
 
@@ -65,6 +67,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             log.trace(String.valueOf(film));
             return film;
         } else {
+            log.error("Не найден фильм с id = {}", filmId);
             throw new FilmNotFoundException(String.format("Фильм с id = %d не найден", filmId));
         }
     }
@@ -72,6 +75,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     //получает наиболее популярные фильмы по количеству лайков
     @Override
     public List<Film> getPopularFilms(int count) {
+        log.info("Получны наиболее популярные фильмы в количестве {}: ", count);
         return getFilms().stream()
                 .sorted((film1, film2) -> film2.getLikes().size() - film1.getLikes().size()) //сортировка по убыванию кол-ва лайков
                 .limit(count)
@@ -82,12 +86,15 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void likeFilm(int filmId, int userId) {
         if (films.containsKey(filmId)) {
-            if (!films.get(filmId).getLikes().contains(userId)) {
-                films.get(filmId).getLikes().add(userId);
+            Film film = films.get(filmId);
+            if (!film.getLikes().contains(userId)) {
+                film.getLikes().add(userId);
             } else {
+                log.error("Пользователь с id = {} уже лайкал этот фильм", userId);
                 throw new UserNotFoundException(String.format("Пользователь с id = %d уже лайкал этот фильм", userId));
             }
         } else {
+            log.error("Фильм с id = {} не найден", filmId);
             throw new FilmNotFoundException(String.format("Фильм с id = %d не найден", filmId));
         }
     }
@@ -96,12 +103,15 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void removeFilmsLike(int filmId, int userId) {
         if (films.containsKey(filmId)) {
-            if (films.get(filmId).getLikes().contains(userId)) {
-                films.get(filmId).getLikes().remove(userId);
+            Film film = films.get(filmId);
+            if (film.getLikes().contains(userId)) {
+                film.getLikes().remove(userId);
             } else {
+                log.error("Пользователь с id = {} не лайкал этот фильм", userId);
                 throw new UserNotFoundException(String.format("Пользователь с id = %d не лайкал этот фильм", userId));
             }
         } else {
+            log.error("Фильм с id = {} не найден", filmId);
             throw new FilmNotFoundException(String.format("Фильм с id = %d не найден", filmId));
         }
     }
