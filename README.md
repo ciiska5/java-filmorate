@@ -28,28 +28,27 @@
 Получение топ-5 самых залайканных фильмов:
 ```
 SELECT * 
-FROM films 
-WHERE film_id IN (SELECT film_id 
-                  FROM likes 
-                  GROUP BY film_id 
-                  ORDER BY COUNT(user_id) 
-                  DESC LIMIT 5);
+FROM films AS f
+JOIN MPA_ratings AS mr ON f.MPA_rating_id = mr.MPA_rating_id
+LEFT JOIN (SELECT film_id,
+                  COUNT(user_id) AS count
+           FROM likes
+           GROUP BY film_id) AS filmLikes
+ON f.film_id = filmLikes.film_id
+ORDER BY filmLikes.count DESC
+LIMIT 5;
 ```
 
-Получение общих друзей для `user_id_from = 1` и `user_id_from = 2`:
+Получение общих друзей для `user_id = 1` и `user_id = 2`:
 ```
-
-SELECT *
-FROM users
-WHERE user_id IN (SELECT two_users_friends.user_id_to AS mutual_friends
-                  FROM (SELECT user_id_to
-                        FROM friendship_status
-                        WHERE user_id_from = 1 AND are_friends IS TRUE
-                        UNION ALL
-                        SELECT user_id_to
-                        FROM friendship_status
-                        WHERE user_id_from = 2 AND are_friends IS TRUE) AS two_users_friends
-                  GROUP BY mutual_friends
-                  HAVING COUNT(mutual_friends) > 1
-                  );
+SELECT * 
+FROM users AS u
+WHERE u.user_id IN
+                (SELECT user_id_to AS id FROM friendship_status WHERE user_id_from = 1
+                UNION
+                SELECT user_id_from AS id FROM friendship_status WHERE user_id_to = 1)
+AND u.user_id IN
+                (SELECT user_id_to AS id FROM friendship_status WHERE user_id_from = 2
+                UNION
+                SELECT user_id_from AS id FROM friendship_status WHERE user_id_to = 2;
 ```
