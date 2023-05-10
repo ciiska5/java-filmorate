@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.genre;
 //класс DAO
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
