@@ -4,7 +4,7 @@
 
 Схема БД выглядит следуюющим образом:
 
-![fimorate_DB_scheme](filmorate_db.png)
+![fimorate_DB_scheme](src/main/resources/filmorate_db.png)
 
 Она состоит из 7 таблиц:
 | Название таблицы | Описание |
