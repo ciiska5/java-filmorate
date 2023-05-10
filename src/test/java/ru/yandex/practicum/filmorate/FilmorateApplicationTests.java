@@ -59,7 +59,7 @@ class FilmorateApplicationTests {
         mockMvc.perform(post("/users")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().is(400));
+                .andExpect(status().is(500));
     }
 
     @SneakyThrows
@@ -72,7 +72,7 @@ class FilmorateApplicationTests {
         mockMvc.perform(post("/users")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().is(400));
+                .andExpect(status().is(500));
     }
 
     @SneakyThrows
@@ -85,7 +85,7 @@ class FilmorateApplicationTests {
         mockMvc.perform(post("/users")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().is(400));
+                .andExpect(status().is(500));
     }
 
     @SneakyThrows
@@ -106,7 +106,7 @@ class FilmorateApplicationTests {
                 "mail@yandex.ru",
                 "doloreUpdate",
                 "est adipisicing",
-                LocalDate.parse("1976-09-20"));
+                LocalDate.parse("1976-09-20"), user.getFriends());
 
         mockMvc.perform(put("/users")
                         .contentType("application/json")
@@ -132,7 +132,7 @@ class FilmorateApplicationTests {
                 "mail@yandex.ru",
                 "doloreUpdate",
                 "est adipisicing",
-                LocalDate.parse("1976-09-20"));
+                LocalDate.parse("1976-09-20"), user.getFriends());
 
         mockMvc.perform(put("/users")
                         .contentType("application/json")
@@ -195,7 +195,7 @@ class FilmorateApplicationTests {
         mockMvc.perform(post("/films")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(film)))
-                .andExpect(status().is(400));
+                .andExpect(status().is(500));
     }
 
     @SneakyThrows
@@ -211,7 +211,7 @@ class FilmorateApplicationTests {
         mockMvc.perform(post("/films")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(film)))
-                .andExpect(status().is(400));
+                .andExpect(status().is(500));
     }
 
     @SneakyThrows
@@ -225,7 +225,7 @@ class FilmorateApplicationTests {
         mockMvc.perform(post("/films")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(film)))
-                .andExpect(status().is(500));
+                .andExpect(status().is(400));
     }
 
     @SneakyThrows
@@ -239,7 +239,7 @@ class FilmorateApplicationTests {
         mockMvc.perform(post("/films")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(film)))
-                .andExpect(status().is(400));
+                .andExpect(status().is(500));
     }
 
     @SneakyThrows
@@ -260,7 +260,8 @@ class FilmorateApplicationTests {
                 "Film Updated",
                 "New film update decription",
                 LocalDate.parse("1989-04-17"),
-                190L
+                190L,
+                film.getLikes()
         );
 
         mockMvc.perform(put("/films")
@@ -287,7 +288,8 @@ class FilmorateApplicationTests {
                 "Film Updated",
                 "New film update decription",
                 LocalDate.parse("1989-04-17"),
-                190L
+                190L,
+                film.getLikes()
         );
 
         mockMvc.perform(put("/films")

@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -12,44 +13,58 @@ import java.util.*;
 @Slf4j
 @RequestMapping("/users")
 public class UserController {
+    private final UserService userService;
 
-    private final Map<Integer, User> users = new HashMap<>();
-    public Integer userId = 1;
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     //создает пользователя
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
-        if (user.getName() == null) {
-            user.setName(user.getLogin());
-        }
-        user.setId(incrementUserId());
-        users.put(user.getId(), user);
-        log.trace(String.valueOf(user));
-        return user;
+        return userService.createUser(user);
     }
 
     //обновляет пользователя
     @PutMapping
-    public User updateUser(@Valid @RequestBody User user) throws ValidationException {
-        if (users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
-            log.trace(String.valueOf(user));
-            return user;
-        } else {
-            log.error("Не найден пользователь с id = {}", user.getId());
-            throw new ValidationException("Пользователь с указанным id не найден");
-        }
+    public User updateUser(@Valid @RequestBody User user) {
+        return userService.updateUser(user);
     }
 
     //получает список всех пользователей
     @GetMapping
     public Collection<User> getAllUsers() {
-        log.trace("Общее количество пользователей: {}", users.size());
-        return users.values();
+        return userService.getAllUsers();
     }
 
-    //инкрементирует userId
-    private Integer incrementUserId() {
-        return userId++;
+    //получает данные о пользователях по их уникальному идентификатору
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable int id) {
+        return userService.getUserById(id);
+    }
+
+    //добавляет в друзья
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable int id, @PathVariable int friendId) {
+        userService.addFriend(id, friendId);
+    }
+
+    //удаляет из друзей
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable int id, @PathVariable int friendId) {
+        userService.removeFriend(id, friendId);
+    }
+
+    //возвращает список друзей пользователя
+    @GetMapping("/{id}/friends")
+    public List<User> getUsersFriends(@PathVariable int id) {
+        return userService.getUsersFriends(id);
+    }
+
+    //возвращает список друзей, общих с другим пользователем
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getMutualFriends(@PathVariable int id, @PathVariable int otherId) {
+        return userService.getMutualFriends(id, otherId);
     }
 }
