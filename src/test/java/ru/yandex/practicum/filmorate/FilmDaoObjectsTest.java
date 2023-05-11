@@ -68,7 +68,7 @@ public class FilmDaoObjectsTest {
         mockMvc.perform(post("/films")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(thisTestFilm)))
-                .andExpect(status().is(500));
+                .andExpect(status().isBadRequest());
     }
 
     @SneakyThrows
@@ -83,7 +83,7 @@ public class FilmDaoObjectsTest {
         mockMvc.perform(post("/films")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(thisTestFilm)))
-                .andExpect(status().is(500));
+                .andExpect(status().isBadRequest());
     }
 
     @SneakyThrows
@@ -110,7 +110,7 @@ public class FilmDaoObjectsTest {
         mockMvc.perform(post("/films")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(thisTestFilm)))
-                .andExpect(status().is(500));
+                .andExpect(status().isBadRequest());
     }
 
     @SneakyThrows

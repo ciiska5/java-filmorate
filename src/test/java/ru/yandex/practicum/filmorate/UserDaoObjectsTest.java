@@ -61,7 +61,7 @@ public class UserDaoObjectsTest {
         mockMvc.perform(post("/users")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(thisTestUser)))
-                .andExpect(status().is(500));
+                .andExpect(status().isBadRequest());
     }
 
     @SneakyThrows
@@ -75,7 +75,7 @@ public class UserDaoObjectsTest {
         mockMvc.perform(post("/users")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(thisTestUser)))
-                .andExpect(status().is(500));
+                .andExpect(status().isBadRequest());
     }
 
     @SneakyThrows
@@ -89,7 +89,7 @@ public class UserDaoObjectsTest {
         mockMvc.perform(post("/users")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(thisTestUser)))
-                .andExpect(status().is(500));
+                .andExpect(status().isBadRequest());
     }
 
     @SneakyThrows
