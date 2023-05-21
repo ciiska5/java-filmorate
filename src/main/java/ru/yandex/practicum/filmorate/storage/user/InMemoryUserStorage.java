@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.UpdateException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -87,15 +86,7 @@ public class InMemoryUserStorage implements UserStorage {
             user.getFriends().add(friendId);
             users.get(friendId).getFriends().add(userId);
         } else {
-            if (!ifUser && !ifFriend) {
-                log.error("Пользователи не найдены");
-                throw new UserNotFoundException("Пользователи не найдены");
-            } else if (!ifUser) {
-                log.error("Пользователь с id = {} не найден", userId);
-                throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", userId));
-            }
-            log.error("Пользователь с id = {} не найден", friendId);
-            throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", friendId));
+            throwUserNotFoundException(ifUser, ifFriend, userId, friendId);
         }
     }
 
@@ -116,15 +107,7 @@ public class InMemoryUserStorage implements UserStorage {
             user.getFriends().remove(friendId);
             users.get(friendId).getFriends().remove(userId);
         } else {
-            if (!ifUser && !ifFriend) {
-                log.error("Пользователи не найдены");
-                throw new UserNotFoundException("Пользователи не найдены");
-            } else if (!ifUser) {
-                log.error("Пользователь с id = {} не найден", userId);
-                throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", userId));
-            }
-            log.error("Пользователь с id = {} не найден", friendId);
-            throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", friendId));
+            throwUserNotFoundException(ifUser, ifFriend, userId, friendId);
         }
     }
 
@@ -144,15 +127,8 @@ public class InMemoryUserStorage implements UserStorage {
             log.info("Получен список общих друзей");
             return mutualFriends;
         } else {
-            if (!ifUser && !ifOther) {
-                log.error("Пользователи не найдены");
-                throw new UserNotFoundException("Пользователи не найдены");
-            } else if (!ifUser) {
-                log.error("Пользователь с id = {} не найден", userId);
-                throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", userId));
-            }
-            log.error("Пользователь с id = {} не найден", otherId);
-            throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", otherId));
+            throwUserNotFoundException(ifUser, ifUser, userId, otherId);
+            throw new UserNotFoundException();
         }
     }
 
@@ -175,5 +151,18 @@ public class InMemoryUserStorage implements UserStorage {
             log.error("Пользователь с id = {} не найден", userId);
             throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", userId));
         }
+    }
+
+    //выводит логи и ошибки при отстуствии пользователей
+    private void throwUserNotFoundException(boolean ifUser, boolean ifFriend, int userId, int friendId) {
+        if (!ifUser && !ifFriend) {
+            log.error("Пользователи не найдены");
+            throw new UserNotFoundException("Пользователи не найдены");
+        } else if (!ifUser) {
+            log.error("Пользователь с id = {} не найден", userId);
+            throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", userId));
+        }
+        log.error("Пользователь с id = {} не найден", friendId);
+        throw new UserNotFoundException(String.format("Пользователь с id = %d не найден", friendId));
     }
 }
