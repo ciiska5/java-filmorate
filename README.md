@@ -1,8 +1,61 @@
 # Filmorate
 
-### Схема БД
+## Описание
+Фильмов много — и с каждым годом становится всё больше. Чем их больше, тем больше разных оценок. Чем больше оценок, тем сложнее сделать выбор.  
+Сервис **Filmorate** предназначен для работы с фильмами и оценками пользователей, а также возвращает топ фильмов, рекомендованных к просмотру. Теперь ни вам, ни вашим друзьям не придётся долго размышлять, что посмотреть вечером.
 
-Схема БД выглядит следуюющим образом:
+## Функционльность проекта
+### Функциональность эндпонта /films
+
+**POST /films** создание и добавление нового фильма
+
+**PUT /films** обновление данных фильма
+
+**GET /films** получение всех фильмов
+
+**GET /films/{id}** получение фильма по его уникальному id
+
+**PUT /films/{id}/like/{userId}** добавление пользователем с идентификатором userId лайка фильму с идентификатором id
+
+**DELETE /films/{id}/like/{userId}** удаление пользователем с идентификатором userId лайка c фильма с идентификатором id
+
+**GET /films/popular?count={count}** получение списка самых популярных фильмов, в параметре запроса `count` передается число фильмов, которые необходимо вывести (по умолчанию = 10)
+
+
+### Функциональность эндпонта /genres
+
+**GET /genres** получение списка всех жанров фильмов
+
+**GET /genres/{id}** получение жанра фильма по его id
+
+
+### Функциональность эндпонта /mpa
+
+**GET /mpa** получение списка всех рейтингов фильмов (MPA)
+
+**GET /mpa/{id}** получение рейтинга фильма (MPA) по его id
+
+
+### Функциональность эндпонта /users
+
+**POST /users** создание нового пользователя
+
+**PUT /users** обновленние данных пользователя
+
+**GET /users** получение списка всех пользователей
+
+**GET /users/{id}** получение пользователя по его id
+
+**PUT /users/{id}/friends/{friendId}** добавление в друзья пользователем с идентификатором id пользователя с идентификатором friendId
+
+**DELETE /users/{id}/friends/{friendId}** удаление пользователем с идентификатором id из друзей пользователя с идентификатором friendId
+
+**GET /users/{id}/friends** получение списка друзей пользователя с идентификатором id
+
+**GET /users/{id}/friends/common/{otherId}** получение списка общих друзей пользователя с идентификатором id и пользователя с идентификатором otherId
+
+
+### Схема базы данных
 
 ![fimorate_DB_scheme](src/main/resources/filmorate_db.png)
 
@@ -16,39 +69,3 @@
 | **film_genre** | таблица с фильмами и с соответствующими им жанрами |
 | **likes** | таблица с фильмами и с пользователями, которым понравился соответствующий фильм |
 | **friendship_status** | таблица со статусом дружбы между двумя пользователями, где `user_id_from` - пользователь, отправивший запрос на дружбу пользователю `user_id_to` |
-
-### Примеры запросов
-
-Получение всех фильмов:
-`SELECT * FROM films;`
-
-Получение всех пользователей:
-`SELECT * FROM users;`
-
-Получение топ-5 самых залайканных фильмов:
-```
-SELECT * 
-FROM films AS f
-JOIN MPA_ratings AS mr ON f.MPA_rating_id = mr.MPA_rating_id
-LEFT JOIN (SELECT film_id,
-                  COUNT(user_id) AS count
-           FROM likes
-           GROUP BY film_id) AS filmLikes
-ON f.film_id = filmLikes.film_id
-ORDER BY filmLikes.count DESC
-LIMIT 5;
-```
-
-Получение общих друзей для `user_id = 1` и `user_id = 2`:
-```
-SELECT * 
-FROM users AS u
-WHERE u.user_id IN
-                (SELECT user_id_to AS id FROM friendship_status WHERE user_id_from = 1
-                UNION
-                SELECT user_id_from AS id FROM friendship_status WHERE user_id_to = 1)
-AND u.user_id IN
-                (SELECT user_id_to AS id FROM friendship_status WHERE user_id_from = 2
-                UNION
-                SELECT user_id_from AS id FROM friendship_status WHERE user_id_to = 2;
-```
