@@ -55,7 +55,7 @@
 **GET /users/{id}/friends/common/{otherId}** получение списка общих друзей пользователя с идентификатором id и пользователя с идентификатором otherId
 
 
-### Схема базы данных
+## Схема базы данных
 
 ![fimorate_DB_scheme](src/main/resources/filmorate_db.png)
 
